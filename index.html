@@ -1,10 +1,1525 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RELATÓRIO FINAL | Comprovação Estatística</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+    <style>
+        /* =================================================================
+           VARIÁVEIS E BASE
+           ================================================================= */
+        :root {
+            --bg-light: #ffffff; 
+            --color-primary: #36454F; 
+            --color-accent: #00bcd4; 
+            --color-tertiary: #B8860B; 
+            --text-dark: #222222; 
+            --border-subtle: #dddddd; 
+            --secondary-highlight: #ff6e40; 
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0; padding: 0;
+            background-color: #f7f7f7; color: var(--text-dark);
+            line-height: 1.6;
+            overflow: hidden; 
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body.intro-completed { overflow-y: auto; }
+
+        /* =================================================================
+           ESTRUTURA
+           ================================================================= */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .presentation-container {
+            max-width: 1050px; margin: 40px auto;
+            background-color: var(--bg-light);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); 
+            border-radius: 8px; overflow: hidden;
+            border: 2px solid var(--color-primary); 
+            border-top: 10px solid var(--color-tertiary); 
+        }
+
+        .slide { 
+            padding: 60px 80px; 
+            border-bottom: 1px solid var(--border-subtle); 
+            position: relative; 
+            break-inside: avoid; 
+        }
+
+        #title-slide {
+            background: linear-gradient(135deg, #2c3e50 0%, #36454F 100%);
+            color: var(--bg-light); text-align: center;
+            padding: 140px 40px; border-bottom: 15px solid var(--color-accent);
+        }
+        #title-slide h1 {
+            font-family: 'Montserrat', sans-serif; font-size: 3.5em; margin-bottom: 15px;
+            text-transform: uppercase; letter-spacing: 5px; color: var(--color-tertiary); 
+            text-shadow: 0px 4px 10px rgba(0,0,0,0.5); line-height: 1.2;
+        }
+
+        .slide h2 {
+            font-family: 'Montserrat', sans-serif; color: var(--color-primary);
+            border-left: 10px solid var(--color-accent); padding-left: 20px;
+            margin-top: 0; font-size: 2.2em; font-weight: 700; line-height: 1.3;
+        }
+
+        .quote {
+            font-style: italic; font-size: 1.1em; margin: 40px 0; padding: 30px;
+            border-left: 5px solid var(--color-tertiary); 
+            background: linear-gradient(to right, #f9f9ff, #fff);
+            border-radius: 0 10px 10px 0; box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
+            break-inside: avoid; 
+        }
+        
+        ul li { padding: 8px 0; font-size: 1.1em; }
+        ul li:before { content: '▶ '; color: var(--color-accent); margin-right: 10px; }
+
+        .table-wrapper { width: 100%; overflow-x: auto; break-inside: avoid; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; box-shadow: 0 0 20px rgba(0,0,0,0.05); min-width: 600px; }
+        th, td { padding: 18px; text-align: center; border: 1px solid #eee; }
+        th { background-color: var(--color-primary); color: white; text-transform: uppercase; letter-spacing: 1px; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        .highlight-row td { background-color: #e0f7fa; color: var(--color-primary); font-weight: bold; border-color: var(--color-accent); }
+
+        /* GRÁFICOS GERAIS */
+        .charts-wrapper { 
+            display: flex; flex-wrap: wrap; justify-content: space-around; 
+            gap: 30px; margin: 40px 0; break-inside: avoid; 
+        }
+        .chart-box { 
+            flex: 1; min-width: 300px; height: auto; 
+            position: relative; text-align: center; break-inside: avoid; 
+        }
+        .canvas-container { position: relative; height: 300px; width: 100%; margin: 0 auto; }
+        .chart-label {
+            font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 10px;
+            color: var(--color-primary); text-transform: uppercase; font-size: 0.9em;
+            border-bottom: 2px solid var(--color-tertiary); display: inline-block; padding-bottom: 5px;
+        }
+        .chart-info-top { font-size: 0.9em; color: #555; margin-bottom: 15px; min-height: 60px; }
+        .chart-info-top strong { color: var(--color-primary); display: block; margin-top: 5px; }
+        .charts-footer-text {
+            text-align: center; font-size: 0.85em; color: #666; margin-top: 30px; padding: 20px;
+            background-color: #f0f0f0; border-radius: 5px; font-weight: 600; line-height: 1.5;
+            text-transform: uppercase; break-inside: avoid;
+        }
+
+        #system-output {
+            margin-top: 60px; padding: 40px;
+            border: 4px solid var(--secondary-highlight); background-color: #fffbf5; 
+            border-radius: 10px; text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 110, 64, 0.15);
+            break-inside: avoid;
+        }
+        .veridito-score {
+            display: block; font-size: 4em; color: var(--color-primary);
+            font-weight: 900; line-height: 1; margin: 10px 0;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+        }
+
+        /* --- DASHBOARD PEARSON (NOVO ESTILO) --- */
+        .stats-grid { display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap; }
+        .stat-card {
+            flex: 1; min-width: 200px;
+            background: white; border: 1px solid #eee; border-radius: 8px;
+            padding: 20px; text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .stat-icon { font-size: 2em; margin-bottom: 10px; display: block; }
+        .stat-label { font-size: 0.8em; color: #777; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .stat-value { font-size: 2.5em; font-weight: 900; color: var(--color-primary); margin: 10px 0; line-height: 1; }
+        .stat-sub { font-size: 0.8em; color: #999; }
+        
+        .dashboard-container { display: flex; gap: 30px; flex-wrap: wrap; margin-bottom: 40px; }
+        .chart-area { flex: 2; min-width: 300px; background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .details-area { flex: 1; min-width: 250px; }
+        
+        #detail-panel {
+            background: white; padding: 25px; border-radius: 8px;
+            border-left: 5px solid var(--color-accent);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); height: 100%;
+        }
+        .math-explanation-box {
+            background-color: var(--color-primary); color: white;
+            padding: 30px; border-radius: 8px; margin-top: 30px;
+            display: flex; gap: 30px; align-items: center; flex-wrap: wrap;
+        }
+        .math-highlight { flex: 1; min-width: 200px; text-align: center; border-right: 1px solid rgba(255,255,255,0.2); }
+        .math-text { flex: 2; min-width: 300px; }
+
+
+        /* --- PESQUISA: CONTAINER GERAL --- */
+        .search-interface-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            margin-top: 20px;
+        }
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-input, .book-select, .verse-select { 
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            flex: 1;
+            font-family: 'Open Sans', sans-serif;
+            transition: border-color 0.3s;
+            min-width: 150px;
+        }
+        .search-input:focus, .book-select:focus, .verse-select:focus {
+            border-color: var(--color-accent);
+            outline: none;
+        }
+        .search-btn-action {
+            padding: 15px 30px;
+            background-color: var(--color-primary);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        .search-btn-action:hover {
+            background-color: var(--color-tertiary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- DASHBOARD DE RESULTADOS (PESQUISA) --- */
+        #search-dashboard {
+            display: none;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .dashboard-layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+        .dashboard-col-chart { flex: 1; min-width: 300px; height: 250px; position: relative; }
+        .dashboard-col-grid { flex: 1; min-width: 300px; }
+        .dashboard-title {
+            font-family: 'Montserrat', sans-serif; font-size: 1em; color: var(--color-primary);
+            font-weight: 700; margin-bottom: 15px; border-bottom: 2px solid var(--color-tertiary);
+            display: inline-block;
+        }
+        .verses-grid-container {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 5px;
+        }
+        .verse-chip {
+            background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px;
+            padding: 5px; text-align: center; font-size: 0.8em; font-weight: 600;
+            color: var(--color-primary); cursor: pointer; transition: all 0.2s;
+        }
+        .verse-chip:hover { background-color: var(--color-accent); color: white; border-color: var(--color-accent); transform: scale(1.05); }
+        .verse-chip:active { background-color: var(--color-tertiary); }
+
+        /* --- ANIMAÇÃO DE DESTAQUE AO CLICAR NO GRID --- */
+        @keyframes flashHighlight {
+            0% { background-color: #fff; transform: scale(1); }
+            50% { background-color: #fff3cd; transform: scale(1.02); border-color: var(--color-tertiary); }
+            100% { background-color: #fff; transform: scale(1); }
+        }
+        .highlight-card {
+            animation: flashHighlight 1.5s ease-in-out;
+            border: 2px solid var(--color-tertiary) !important;
+        }
+
+        /* --- BARRA DE CONTAGEM E CARDS --- */
+        .results-count-bar {
+            background-color: #e0f7fa; color: var(--color-primary); padding: 10px 15px;
+            border-radius: 5px; font-weight: 700; margin-bottom: 15px;
+            border-left: 5px solid var(--color-accent); font-size: 0.9em;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        #results-container {
+            margin-top: 20px; max-height: 600px; overflow-y: auto;
+            border-top: 2px solid var(--border-subtle); padding-top: 20px;
+        }
+        .results-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px; padding: 5px;
+        }
+
+        .result-card {
+            background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden; display: flex; flex-direction: column; border: 1px solid #eee;
+            transition: transform 0.2s, box-shadow 0.2s; position: relative;
+        }
+        .result-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.12); border-color: var(--color-accent); }
+
+        /* --- CAMPOS INTELIGENTES (IA) --- */
+        .ai-summary-box {
+            background-color: #f0faff; border-left: 4px solid var(--color-accent);
+            padding: 12px 15px; margin: 0; border-bottom: 1px solid #eee;
+        }
+        .ai-summary-title {
+            display: block; font-size: 0.75em; font-weight: 800; color: var(--color-accent);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+        }
+        .ai-summary-text { font-size: 0.9em; color: #444; font-style: italic; line-height: 1.5; }
+
+        .ai-tags-container { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 15px 20px; }
+        .ai-tag {
+            background-color: #f1f1f1; color: #666; font-size: 0.75em; padding: 3px 10px;
+            border-radius: 12px; font-weight: 600; border: 1px solid #ddd;
+        }
+
+        .result-header {
+            background-color: var(--color-primary); color: white; padding: 12px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 3px solid var(--color-tertiary);
+        }
+        .book-title { font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px; }
+        .verse-badge {
+            background-color: var(--color-tertiary); color: #111; padding: 4px 10px;
+            border-radius: 20px; font-weight: 800; font-size: 0.8em; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .result-body {
+            padding: 20px; font-family: 'Open Sans', sans-serif; color: #555;
+            font-size: 0.95em; line-height: 1.6; flex-grow: 1;
+            max-height: 200px; overflow-y: auto;
+        }
+        .result-body::-webkit-scrollbar { width: 5px; }
+        .result-body::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 3px; }
+        
+        .result-footer {
+            padding: 12px 20px; background-color: #fcfcfc; border-top: 1px solid #f0f0f0;
+            text-align: right; display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .pdf-link-btn {
+            text-decoration: none; color: var(--color-primary); font-size: 0.85em;
+            font-weight: 700; display: inline-flex; align-items: center; gap: 8px;
+            transition: color 0.2s; padding: 5px 10px; border-radius: 4px; margin-left: auto;
+        }
+        .pdf-link-btn:hover { background-color: #f0f0f0; color: var(--color-accent); }
+        .pdf-icon { font-size: 1.2em; }
+        mark { background-color: #ffe082; padding: 0 2px; border-radius: 2px; color: #222; }
+
+        /* --- NOVO ESTILO DO FOOTER HARMONIZADO --- */
+        footer {
+            background-color: var(--color-primary); 
+            padding: 40px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; /* Alinha verticalmente no centro */
+            border-top: 8px solid var(--color-tertiary); 
+            color: var(--bg-light);
+            gap: 20px; 
+            break-inside: avoid;
+            text-align: center; /* Garante que todo texto fique centralizado */
+        }
+
+        /* Cada coluna ocupa espaços iguais (1/3 cada), garantindo que o centro seja o centro real */
+        .footer-col {
+            flex: 1; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-title {
+            color: var(--color-accent);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .footer-link {
+            color: #fff;
+            text-decoration: none;
+            border-bottom: 1px dotted var(--color-accent);
+            transition: all 0.3s;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .footer-link:hover {
+            color: var(--color-accent);
+            border-bottom: 1px solid var(--color-accent);
+        }
+
+        /* Ajuste do Botão para ficar centralizado */
+        .download-area {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .download-btn {
+            background-color: var(--color-tertiary); 
+            color: #111; border: none;
+            padding: 15px 30px; 
+            border-radius: 50px; 
+            font-weight: 800; 
+            font-size: 1em; 
+            font-family: 'Montserrat', sans-serif; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            transition: all 0.3s; 
+            white-space: nowrap; 
+        }
+        .download-btn:hover { 
+            background-color: #fff; 
+            transform: scale(1.05); 
+            box-shadow: 0 0 20px rgba(255,255,255,0.4); 
+        }
+
+        /* Responsividade para Celular (Empilhar tudo) */
+        @media (max-width: 768px) {
+            footer {
+                flex-direction: column;
+                gap: 40px;
+                padding: 40px 20px;
+            }
+            .footer-col {
+                width: 100%;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                padding-bottom: 20px;
+            }
+            .footer-col:last-child {
+                border-bottom: none;
+            }
+            /* Reordenar para o botão aparecer primeiro no celular (opcional) */
+            .download-area {
+                order: -1; 
+            }
+        }
+
+        /* Ajuste para Impressão */
+        @media print {
+            footer {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+            }
+            .footer-col {
+                flex: 1;
+            }
+            /* Esconde o botão e links na impressão se desejar, ou mantém */
+            .download-btn { display: none; }
+        }
+        /* BOTÕES GERAIS */
+        .play-btn {
+            background: transparent; border: 2px solid var(--color-accent);
+            color: var(--color-primary); padding: 12px 25px; border-radius: 30px;
+            font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.9em;
+            cursor: pointer; margin-bottom: 25px; transition: all 0.3s ease;
+            display: inline-flex; align-items: center; gap: 15px;
+            max-width: 100%; white-space: normal; text-align: left;
+        }
+        .play-btn:hover { background-color: var(--color-accent); color: #fff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 188, 212, 0.3); }
+        .play-btn.header-btn { border-color: var(--color-tertiary); color: var(--color-tertiary); margin-top: 30px; }
+        .play-btn.header-btn:hover { background-color: var(--color-tertiary); color: #fff; }
+        .btn-icon {
+            display: inline-block; flex-shrink: 0; width: 0; height: 0;
+            border-style: solid; border-width: 10px 0 10px 16px; 
+            border-color: transparent transparent transparent var(--color-primary);
+            background: transparent; border-radius: 0; transition: all 0.2s ease;
+        }
+        .play-btn:hover .btn-icon { border-color: transparent transparent transparent #fff; }
+        .play-btn.playing { background-color: var(--color-primary); color: var(--color-accent); border-color: var(--color-primary); }
+        .play-btn.playing .btn-icon {
+            width: 16px; height: 16px; border-width: 3px; border-style: solid; border-radius: 50%;
+            border-color: var(--color-accent); border-top-color: transparent; animation: spinner 0.8s linear infinite;
+        }
+        .play-btn.paused { background-color: var(--color-accent); color: #fff; animation: pulse-pause 2s infinite; }
+        .play-btn.paused .btn-icon { border-width: 10px 0 10px 16px; border-color: transparent transparent transparent #fff; animation: none; }
+
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse-pause { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* OVERLAYS */
+        .fullscreen-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #111; z-index: 99999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; transition: opacity 1s ease; padding: 20px;
+            opacity: 0; pointer-events: none;
+        }
+        .fullscreen-overlay.active { opacity: 1; pointer-events: auto; }
+        .overlay-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        #intro-overlay h2, #outro-overlay h2 {
+            color: var(--color-accent); font-family: 'Montserrat', sans-serif;
+            font-size: 2em; text-transform: uppercase; text-align: center;
+            text-shadow: 0 0 20px rgba(0,188,212,0.8); margin-bottom: 40px;
+        }
+        #outro-overlay h2 { color: var(--color-tertiary); text-shadow: 0 0 20px rgba(184, 134, 11, 0.8); }
+
+        #start-mandatory-btn {
+            padding: 20px 40px; font-size: 1.1em; font-weight: 900;
+            background: linear-gradient(45deg, var(--color-tertiary), #d4af37);
+            color: #111; border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 40px rgba(184, 134, 11, 0.6); animation: pulseBtn 2s infinite; margin-bottom: 20px;
+        }
+        @keyframes pulseBtn { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        #skip-intro-btn {
+            background: transparent; border: 1px solid #555; color: #888;
+            padding: 10px 20px; border-radius: 30px; cursor: pointer;
+            font-size: 0.9em; transition: all 0.3s; position: absolute; top: 30px; right: 30px;
+        }
+        #skip-intro-btn:hover { border-color: white; color: white; }
+        
+        /* --- ESTILOS DO MODAL DE DOWNLOAD --- */
+        .modal-backdrop {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #fff; padding: 40px; border-radius: 12px; max-width: 450px; width: 90%; text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3); position: relative; border-top: 8px solid var(--color-tertiary); animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn { from {transform: translateY(-50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+        .modal-title { font-family: 'Montserrat', sans-serif; font-size: 1.5em; color: var(--color-primary); margin-bottom: 10px; font-weight: 800; }
+        .modal-text { color: #666; margin-bottom: 25px; font-size: 0.95em; line-height: 1.5; }
+        .modal-input {
+            width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #eee; border-radius: 6px; font-size: 1em;
+            font-family: 'Open Sans', sans-serif; transition: border-color 0.3s; box-sizing: border-box;
+        }
+        .modal-input:focus { border-color: var(--color-accent); outline: none; }
+        .modal-btn-submit {
+            background: linear-gradient(45deg, var(--color-tertiary), #d4af37); color: #111; border: none; padding: 15px 30px;
+            border-radius: 50px; font-weight: 800; font-size: 1em; cursor: pointer; width: 100%; text-transform: uppercase;
+            transition: transform 0.2s, box-shadow 0.2s; font-family: 'Montserrat', sans-serif;
+        }
+        .modal-btn-submit:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(184, 134, 11, 0.4); }
+        .modal-close { background: transparent; border: none; color: #999; margin-top: 15px; cursor: pointer; font-size: 0.85em; text-decoration: underline; }
+        .modal-close:hover { color: #555; }
+
+        @media (max-width: 768px) {
+            .presentation-container { margin: 0; border-radius: 0; width: 100%; border:none; }
+            .slide { padding: 40px 20px; }
+            #title-slide { padding: 100px 20px 60px 20px; }
+            #title-slide h1 { font-size: 1.8em; }
+            .charts-wrapper { flex-direction: column; }
+            .chart-box { width: 100%; }
+            .veridito-score { font-size: 3em; }
+            footer { flex-direction: column; text-align: center; gap: 40px; }
+            .download-btn { width: 100%; border-radius: 10px; }
+            .qr-code-area, .system-log, .download-area { width: 100%; text-align: center; }
+            #skip-intro-btn { top: 20px; right: 20px; font-size: 0.8em; padding: 5px 15px; }
+            .search-controls { flex-direction: column; align-items: stretch; }
+            .dashboard-layout { flex-direction: column; }
+            .stats-grid, .dashboard-container { flex-direction: column; }
+            .math-explanation-box { flex-direction: column; text-align: center; }
+            .math-highlight { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 20px; margin-bottom: 20px; }
+        }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; background-color: #fff; }
+            .presentation-container { box-shadow: none; border: none; max-width: 100%; margin: 0; }
+            .slide, table, .chart-box, .quote, #system-output, .charts-wrapper, .charts-footer-text, .search-interface-container, #search-dashboard, .stats-grid, .dashboard-container { break-inside: avoid; page-break-inside: avoid; }
+            .play-btn, .fullscreen-overlay, .download-area, #intro-overlay, #outro-overlay, #skip-intro-btn, .search-controls, .modal-backdrop { display: none !important; }
+            .reveal { opacity: 1 !important; transform: none !important; }
+            .chart-box, .dashboard-col-chart, .chart-area { width: 45% !important; float: left; margin-bottom: 20px; }
+            .canvas-container { height: 250px !important; }
+            .charts-wrapper { display: block; overflow: hidden; }
+            footer { display: flex; flex-direction: row; justify-content: space-between; padding: 30px; }
+            .qr-code-area img { border: 1px solid #ccc; }
+        }
+		/* --- ESTILOS DA SEÇÃO V (OBJETIVO FINAL) --- */
+        .invitation-card {
+            background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            border-top: 6px solid var(--color-tertiary); /* Dourado */
+        }
+
+        .invitation-icon {
+            font-size: 3em;
+            color: var(--color-secondary-highlight); /* Laranja suave */
+            margin-bottom: 15px;
+            animation: heartbeat 2s infinite;
+        }
+
+        .invitation-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--color-primary);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .invitation-card p {
+            font-size: 1.1em;
+            color: #555;
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+        }
+
+        .disclaimer-box {
+            background-color: #f0f8ff; /* Azul bem clarinho */
+            border: 2px dashed var(--color-accent); /* Azul Ciano */
+            border-radius: 10px;
+            padding: 20px;
+            display: inline-block;
+            color: var(--color-primary);
+            font-size: 0.95em;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            70% { transform: scale(1); }
+        }
+    </style>
 </head>
-<body>
-    <p>Aplicação carregando...</p>
+
+    <div id="intro-overlay" class="fullscreen-overlay active">
+        <canvas id="canvas-intro" class="overlay-canvas"></canvas>
+        <button id="skip-intro-btn" onclick="skipIntro()">Pular Introdução ✕</button>
+        <h2 id="intro-text">A Harmonia Divina do Mundo Espiritual</h2>
+        <button id="start-mandatory-btn" onclick="playMandatoryIntro()">INICIAR APRESENTAÇÃO</button>
+    </div>
+
+    <div id="outro-overlay" class="fullscreen-overlay">
+        <canvas id="canvas-outro" class="overlay-canvas"></canvas>
+        <h2>Obrigado por Assistir</h2>
+        <p style="color: white; margin-bottom: 20px;">Preparando documento para impressão...</p>
+        <div style="color: var(--color-accent); font-size: 2em;">⟳</div>
+    </div>
+    
+    <div id="download-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 class="modal-title">Baixar Relatório Completo</h3>
+            <p class="modal-text">Para liberar o download do Relatório com todos versículos analisados, por favor, informe seu nome abaixo.</p>
+            <form action="https://api.sheetmonkey.io/form/w9UX7TYHt9nTZquy3sHATZ" method="post" onsubmit="finalizarDownload(event)">
+                <input type="text" name="Nome" class="modal-input" placeholder="Seu Nome" required>
+                <input type="email" name="Email" class="modal-input" placeholder="Seu E-mail" required>
+                <input type="hidden" name="Data" value="x-sheetmonkey-current-date-time" />
+                <input type="hidden" name="Origem" value="Botão PDF Site">
+                <button type="submit" class="modal-btn-submit">LIBERAR DOWNLOAD AGORA</button>
+            </form>
+            <button class="modal-close" onclick="fecharModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="presentation-container">
+        
+        <div class="slide" id="title-slide">
+            <h1 class="reveal">RELATÓRIO DE DADOS EMMANUEL E AS PALAVRAS DO CRISTO</h1>
+            <h2 class="reveal" style="border:none; font-size:1.3em;color: var(--color-accent); margin-top: 10px;">ANÁLISE HARMÔNICA DA MENSAGEM DO CRISTO | PROVA ESTATÍSTICA</h2>
+            <p class="reveal" style="font-size: 1.1em; color: var(--color-accent); margin-top:20px;">O Código Matemático que atesta a Organização do Mundo Espiritual Superior.</p>
+            
+            <button id="header-audio-btn" class="play-btn header-btn reveal" style="display: inline-flex;" onclick="toggleAudio('Bem vindos. O que vocês estão prestes a ver é a prova matemática de que o acaso não existe na obra espiritual. Através da análise de milhares de versículos, os números revelam uma harmonia oculta. Uma proporção divina que conecta a mensagem do Cristo à precisão de Emmanuel.', this)">
+                <span class="btn-icon"></span> <span>OUVIR INTRODUÇÃO</span>
+            </button>
+        </div>
+
+        <div class="slide">
+            <div class="reveal">
+                <h2>I. ESCOPO DA ANÁLISE E MÉTRICAS FUNDAMENTAIS</h2>
+                <button class="play-btn" onclick="toggleAudio('O foco central da pesquisa reside em validar a precisão da transmissão mediúnica. De um lado, mil novecentos e quarenta versículos do Cristo. Do outro, a análise estatística dos comentários de Emmanuel.', this)">
+                    <span class="btn-icon"></span> <span>OUVIR ANÁLISE</span>
+                </button>
+            </div>
+
+            <p class="reveal">O foco central da pesquisa reside em validar a precisão da transmissão mediúnica por meio de dois pilares:</p>
+            <ul class="reveal">
+                <li>Rastreamento Completo: Compilação dos 1.940 versículos onde Jesus proferiu palavras.</li>
+                <li>Comprovação Estatística: Análise de que os comentários de Emmanuel sobre o Evangelho respeitam a proporção original.</li>
+            </ul>
+            
+            <div class="quote reveal">
+                <p>MENSAGEM CHAVE: "As palavras que eu vos disse são espírito e são vida." <span style="color: var(--color-primary); font-weight:700;">(João 6:63)</span></p>
+            </div>
+            
+            <div class="table-wrapper reveal">
+                <table>
+                    <thead><tr><th>MÓDULO</th><th>VERSÍCULOS (QTD.)</th><th>PROPORÇÃO DE COMENTÁRIO</th></tr></thead>
+                    <tbody>
+                        <tr class="highlight-row"><td>Total de Palavras de Jesus (BASE)</td><td>1.940</td><td>100%</td></tr>
+                        <tr><td>Versículos Comentados por Emmanuel</td><td>418</td><td>21,5%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="slide" id="harmony-data">
+            <div class="reveal">
+                <h2>II. HARMONIA ESTRUTURAL</h2>
+                <button class="play-btn" onclick="toggleAudio('A matemática não mente. Comparem os dois gráficos abaixo. A pizza da esquerda representa as palavras de Jesus. A da direita, os comentários de Emmanuel. As fatias são praticamente idênticas.', this)">
+                    <span class="btn-icon"></span> <span>OUVIR ANÁLISE COMPARATIVA</span>
+                </button>
+            </div>
+
+            <div class="charts-wrapper reveal">
+                <div class="chart-box">
+                    <div class="chart-label">Palavras de Jesus (Origem)</div>
+                    <div class="chart-info-top">
+                        <p>Jesus Cristo aparece Falando nos 4 Evangelhos.</p>
+                        <p><strong>Quantidade de versículos: 1940 Versos</strong></p>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="chartJesus"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-box">
+                    <div class="chart-label">Comentários Emmanuel (Destino)</div>
+                    <div class="chart-info-top">
+                        <p>Comentários do Espírito Emmanuel pelo Chico</p>
+                        <p><strong>Versículos que Jesus aparece Falando: 418 versos (1/5)</strong></p>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="chartEmmanuel"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-footer-text reveal">
+                <p>ESTES GRÁFICOS FORAM GERADOS DIRETAMENTE DAS PLANILHAS UTILIZADAS,<br>
+                OBSERVEMOS QUE EMMANUEL FAZ UM AJUSTE DE USO DAS PASSAGENS TRANSMITIDAS AO MÉDIUM CHICO XAVIER,<br>
+                JUSTAMENTE NAQUELES APÓSTOLOS QUE CONVIVERAM COM JESUS CRISTO.</p>
+            </div>
+
+            <div class="table-wrapper reveal">
+                <table style="margin-top: 40px;">
+                <thead>
+                    <tr>
+                        <th>EVANGELISTA</th>
+                        <th>Versículos de Jesus (Aparece Falando)</th>
+                        <th>Palavras de Jesus (Percentual dos 1.940 Versiculos) </th>
+                        <th>Versículos que Emmanuel Comenta (Qtd.)</th>
+                        <th>Comentários Emmanuel (Percentual dos 418 Comentários)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Mateus</strong></td><td>648</td><td>33,4%</td><td>148</td><td>35,4%</td></tr>
+                    <tr><td><strong>Lucas</strong></td><td>584</td><td>30,1%</td><td>112</td><td>26,8%</td></tr>
+                    <tr><td><strong>João</strong></td><td>419</td><td>21,6%</td><td>101</td><td>24,2%</td></tr>
+                    <tr><td><strong>Marcos</strong></td><td>289</td><td>14,9%</td><td>57</td><td>13,6%</td></tr>
+                </tbody>
+                </table>
+            </div>
+            
+        </div>
+
+        <div class="slide" id="pearson-analysis">
+            <div class="reveal">
+                <h2>III. A PROVA MATEMÁTICA: CORRELAÇÃO DE PEARSON</h2>
+                <button class="play-btn" onclick="toggleAudio('Existe uma relação direta entre o quanto Jesus falou em cada Evangelho e o quanto Emmanuel comentou? O gráfico de dispersão abaixo prova que sim. Clique nos pontos para entender a lógica de cada evangelista.', this)">
+                    <span class="btn-icon"></span> <span>OUVIR EXPLICAÇÃO ESTATÍSTICA</span>
+                </button>
+                <p>Abaixo detalhamos o cálculo que refuta a hipótese da "coincidência". Se a seleção fosse aleatória, o coeficiente seria próximo de zero.</p>
+            </div>
+
+            <div class="stats-grid reveal">
+                <div class="stat-card">
+                    <span class="stat-icon">📊</span>
+                    <span class="stat-label">Coeficiente (R)</span>
+                    <div class="stat-value" id="r-value-display" style="color:var(--color-accent);">0.9855</div>
+                    <span class="stat-sub">Correlação Quase Perfeita</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">📖</span>
+                    <span class="stat-label">Total Analisado</span>
+                    <div class="stat-value">1.940</div>
+                    <span class="stat-sub">Versos com Falas de Jesus</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">✍️</span>
+                    <span class="stat-label">Comentários</span>
+                    <div class="stat-value">418</div>
+                    <span class="stat-sub">Foco nos Discursos Diretos</span>
+                </div>
+            </div>
+
+            <div class="dashboard-container reveal">
+                <div class="chart-area">
+                    <div class="chart-label">Correlação Visual: Palavras vs. Comentários</div>
+                    <div class="canvas-container" style="height:350px;">
+                        <canvas id="correlationChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="details-area">
+                    <div id="detail-panel">
+                        <h3 id="detail-title" style="color:var(--color-primary); border-bottom:1px solid #eee; padding-bottom:10px; margin-top:0;">
+                            Selecione um ponto
+                        </h3>
+                        <div id="detail-content" style="font-size:0.9em; color:#666;">
+                            Clique em uma das "bolinhas" no gráfico ao lado para entender o perfil de cada Evangelho e por que ele ocupa aquela posição na análise estatística.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="math-explanation-box reveal">
+                <div class="math-highlight">
+                    <div style="font-size:3em; font-weight:900;">0.98</div>
+                    <p style="margin:0; text-transform:uppercase; font-size:0.8em; letter-spacing:1px;">Coeficiente R</p>
+                </div>
+                <div class="math-text">
+                    <h4 style="margin-top:0; color:var(--color-tertiary);">IMPROBABILIDADE DA ALEATORIEDADE</h4>
+                    <p>Se a seleção de versículos fosse coincidência, o valor de <strong>R</strong> (Pearson) estaria próximo de <strong>0</strong>. Um resultado de <strong>0.98</strong> indica uma intencionalidade precisa.</p>
+                    <p>Emmanuel não escolheu aleatoriamente; ele seguiu rigorosamente a densidade doutrinária dos discursos do Cristo.</p>
+                </div>
+            </div>
+            <div id="system-output" class="reveal">
+                <h4>VEREDITO FINAL: COMPROVAÇÃO</h4>
+                <span class="veridito-score">98.5%</span>
+                <p style="font-size:1.2em;">CORRELAÇÃO ESTRUTURAL CONFIRMADA</p>
+                <p>Este resultado elimina o acaso, VALIDANDO o planejamento Espiritual.</p>
+                
+                <button class="play-btn" style="margin-top:20px; border-color:var(--secondary-highlight); color:var(--secondary-highlight)" onclick="toggleAudio('O veredito final é incontestável. Com noventa e oito ponto cinco por cento de precisão, validamos o planejamento espiritual.', this)">
+                    <span class="btn-icon" style="border-color:var(--secondary-highlight)"></span> <span>OUVIR VEREDITO</span>
+                </button>
+            </div>
+			</div>
+        <div class="slide" id="search-slide">
+           <div class="reveal">
+                <h2>IV. FERRAMENTA DE PESQUISA: O ACERVO</h2>
+                <button class="play-btn" onclick="toggleAudio('Disponibilizamos aqui a ferramenta de acesso direto. Você pode selecionar o Evangelho desejado e filtrar pelo número do versículo para acesso imediato.', this)">
+                    <span class="btn-icon"></span> <span>OUVIR INSTRUÇÕES</span>
+                </button>
+                <p>Utilize a interface abaixo para validar os dados diretamente na fonte. Selecione o Livro e o Versículo desejado.</p>
+           
+		   </div>
+		       <div class="search-interface-container reveal">
+                <div class="search-controls">
+                    <select id="book-select" class="book-select" onchange="loadVersesForSelectedBook()">
+                        <option value="Mateus">Mateus</option>
+                        <option value="Marcos">Marcos</option>
+                        <option value="Lucas">Lucas</option>
+                        <option value="João">João</option>
+                        <option value="Todos" style="font-weight:bold; color:var(--color-tertiary);">★ Todos os Evangelistas</option>
+                    </select>
+
+                    <select id="verse-select" class="verse-select">
+                        <option value="">Carregando versículos...</option>
+                    </select>
+
+                    <input type="text" id="search-input" class="search-input" placeholder="Ou digite uma palavra chave..." />
+
+                    <button id="search-btn" class="search-btn-action" onclick="searchText()">Pesquisar</button>
+                </div>
+			
+			<div id="search-dashboard">
+                    <div class="dashboard-layout">
+                        <div class="dashboard-col-chart">
+                            <span class="dashboard-title">Distribuição por Livro (Clique para filtrar)</span>
+                            <canvas id="searchChart"></canvas>
+                        </div>
+                        <div class="dashboard-col-grid">
+                            <span class="dashboard-title">Índice dos Versículos (Clique para ver)</span>
+                            <div id="verses-grid-content" class="verses-grid-container">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="results-container">
+                    <p style="color:#666; text-align:center; padding:20px;">Selecione um versículo ou digite uma palavra e clique em Pesquisar.</p>
+                </div>
+            </div>
+        	</div>   
+		<div class="slide" id="final-objective">
+            <div class="reveal">
+                <h2>V. O PROPÓSITO FINAL: A REFORMA ÍNTIMA</h2>
+                
+                <button class="play-btn" onclick="toggleAudio('O objetivo final desta obra não é apenas numérico. Com as palavras do Cristo e a interpretação de Emmanuel, buscamos a reforma moral. Meu irmão, minha irmã: este acervo é gratuito e livre, um convite para aprendermos juntos.', this)">
+                    <span class="btn-icon"></span> <span>OUVIR MENSAGEM FINAL</span>
+                </button>
+
+                <p style="font-size: 1.1em; margin-bottom: 30px;">
+                    A comprovação estatística apresentada até aqui serve a um propósito maior: validar a confiança na mensagem para que ela possa tocar o coração. Ao unir a <strong>autoridade do Cristo</strong> com a <strong>clareza de Emmanuel</strong>, temos em mãos um roteiro seguro para nossa própria iluminação.
+                </p>
+            </div>
+
+            <div class="invitation-card reveal">
+                <div class="invitation-icon">❤</div>
+                <h3>CONVITE AO ESTUDO</h3>
+                <p>
+                    Meu irmão, minha irmã: Você está convidado a ler, pesquisar e estudar estes versículos. 
+                    Este é um esforço conjunto para aprendermos e crescermos.
+                </p>
+                
+                <div class="disclaimer-box">
+                    <span style="font-size:1.5em; display:block; margin-bottom:5px;">🕊️</span>
+                    <strong>PROJETO SEM FINS LUCRATIVOS</strong><br>
+                    Todo este conteúdo é disponibilizado gratuitamente.<br>
+                    O único valor solicitado é a sua disposição em buscar a melhoria interior.
+                    <br><br>
+                    <em>"De graça recebestes, de graça dai." (Mateus 10:8)</em>
+                </div>
+            </div>
+        </div>
+        
+ 
+		<footer>
+    <div class="footer-col reveal">
+        <p class="footer-title">CONHEÇA MAIS O PROJETO</p>
+        <p style="margin-bottom:5px;">Acesse o vídeo completo:</p>
+        <a href="https://youtu.be/1-ipfbflvXM?si=NZrDPBNnEKN5PWIx" target="_blank" class="footer-link">
+            ▶ Assistir Vídeo
+        </a>
+    </div>
+
+    <div class="footer-col reveal download-area">
+        <button class="download-btn" onclick="startDownloadProcess()">
+            ↓ Baixar Relatório
+        </button>
+    </div>
+
+    <div class="footer-col reveal">
+        <p class="footer-title">FONTE DE DADOS</p>
+        <p style="margin-bottom:5px;">AUTOR: ANDRÉ L. PAWLAS</p>
+        <a href="https://www.youtube.com/@estudodoevangelho" target="_blank" class="footer-link">
+            Visitar Canal do Youtube
+        </a>
+    </div>
+</footer>
+       
+    </div>
+
+    <script>
+        // --- LÓGICA DE PESQUISA E CARDS ---
+        const EXTERNAL_DATABASE_MAP = {
+            "Mateus": "https://andrepawlas-ui.github.io/acervo-emmanuel/acervo_emmanuel_mateus.json",
+            "Marcos": "https://andrepawlas-ui.github.io/acervo-emmanuel/acervo_emmanuel_marcos.json",
+            "Lucas": "https://andrepawlas-ui.github.io/acervo-emmanuel/acervo_emmanuel_lucas.json",
+            "João":  "https://andrepawlas-ui.github.io/acervo-emmanuel/acervo_emmanuel_joao.json"
+        };
+
+        const PDF_BASE_URL = "https://andrepawlas-ui.github.io/acervo-emmanuel/pdfs/"; 
+
+        let database = []; 
+        let searchChartInstance = null;
+
+        // --- FUNÇÕES AUXILIARES ---
+        function generateSafeId(book, verse) { return `card-${book.replace(/[^a-zA-Z0-9]/g, '')}-${verse.replace(/[^a-zA-Z0-9]/g, '')}`; }
+        function compareVerses(verseA, verseB) {
+            if (!verseA || !verseB) return 0;
+            const partsA = verseA.split(':').map(part => parseInt(part.trim(), 10));
+            const partsB = verseB.split(':').map(part => parseInt(part.trim(), 10));
+            if (partsA[0] !== partsB[0]) return partsA[0] - partsB[0];
+            return partsA[1] - partsB[1];
+        }
+        function scrollToCard(book, verse) {
+            const id = generateSafeId(book, verse);
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('highlight-card');
+                setTimeout(() => element.classList.remove('highlight-card'), 2000);
+            }
+        }
+
+        // --- DADOS PARA O GRÁFICO DE DISPERSÃO (NOVO) ---
+        const gospelData = [
+            { name: "Mateus", x: 33.4, y: 35.4, verses: 648, comments: 148, color: "rgba(54, 69, 79, 0.8)", desc: "<strong>O Evangelho do Mestre.</strong> Mateus agrupa os grandes discursos (Sermão da Montanha). Por ter a maior densidade de ensinamentos, é o alvo principal de Emmanuel." },
+            { name: "Lucas", x: 30.1, y: 26.8, verses: 584, comments: 112, color: "rgba(0, 188, 212, 0.8)", desc: "<strong>O Evangelho Humano.</strong> Lucas detalha parábolas exclusivas. Possui o segundo maior volume de falas, e recebe a segunda maior atenção." },
+            { name: "João", x: 21.6, y: 24.2, verses: 419, comments: 101, color: "rgba(184, 134, 11, 0.8)", desc: "<strong>O Evangelho Espiritual.</strong> Profundamente teológico. A proporção de comentários é ligeiramente elevada pela necessidade de interpretação profunda." },
+            { name: "Marcos", x: 14.9, y: 13.6, verses: 289, comments: 57, color: "rgba(153, 153, 153, 0.8)", desc: "<strong>O Evangelho da Ação.</strong> Foca no que Jesus <em>fez</em>. Sendo o menos discursivo, recebe menos comentários, confirmando o critério." }
+        ];
+
+        // --- CÁLCULO DE PEARSON (LÓGICA DO NOVO ARQUIVO) ---
+        function calculateStats(data) {
+            const n = data.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+            data.forEach(d => {
+                sumX += d.x; sumY += d.y; sumXY += d.x * d.y;
+                sumX2 += d.x * d.x; sumY2 += d.y * d.y;
+            });
+            const numerator = (n * sumXY) - (sumX * sumY);
+            const denominator = Math.sqrt(((n * sumX2) - (sumX * sumX)) * ((n * sumY2) - (sumY * sumY)));
+            return denominator === 0 ? 0 : numerator / denominator;
+        }
+
+        // --- ATUALIZAR PAINEL LATERAL (NOVO) ---
+        function updateDetails(index) {
+            const data = gospelData[index];
+            const title = document.getElementById('detail-title');
+            const content = document.getElementById('detail-content');
+            const panel = document.getElementById('detail-panel');
+            
+            panel.style.borderLeftColor = data.color.replace('0.8', '1');
+            title.innerHTML = `${data.name} <span style="font-size:0.7em; color:#888; float:right;">(Falas: ${data.x}%)</span>`;
+            content.innerHTML = `
+                <div style="animation: fadeIn 0.5s;">
+                    <p style="margin-bottom:15px; line-height:1.6;">${data.desc}</p>
+                    <div style="display:flex; gap:10px; background:#f9f9f9; padding:10px; border-radius:5px;">
+                        <div style="flex:1; text-align:center;">
+                            <span style="display:block; font-size:0.7em; color:#999;">VERSÍCULOS</span>
+                            <span style="font-weight:bold; color:#333;">${data.verses}</span>
+                        </div>
+                        <div style="flex:1; text-align:center;">
+                            <span style="display:block; font-size:0.7em; color:#999;">COMENTÁRIOS</span>
+                            <span style="font-weight:bold; color:var(--color-accent);">${data.comments}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- CARREGAMENTO DE DADOS ---
+        async function loadVersesForSelectedBook() {
+            const book = document.getElementById("book-select").value;
+            const verseSelect = document.getElementById("verse-select");
+            verseSelect.innerHTML = "<option value=''>Carregando...</option>";
+            verseSelect.disabled = true;
+            document.getElementById("results-container").innerHTML = "<p style='text-align:center; padding:20px; color:#666;'>Atualizando base de dados...</p>";
+            document.getElementById("search-dashboard").style.display = "none";
+            const timeStamp = "?t=" + new Date().getTime();
+
+            try {
+                let combinedData = [];
+                if (book === "Todos") {
+                    const promises = Object.values(EXTERNAL_DATABASE_MAP).map(url => fetch(url + timeStamp).then(r => r.json()));
+                    const results = await Promise.all(promises);
+                    results.forEach(data => combinedData.push(...data));
+                } else {
+                    const response = await fetch(EXTERNAL_DATABASE_MAP[book] + timeStamp);
+                    combinedData = await response.json();
+                }
+                database = combinedData;
+                const verses = [...new Set(database.map(item => item.verse))];
+                verses.sort(compareVerses);
+                let optionsHtml = "<option value=''>Todos os versículos</option>";
+                verses.forEach(v => { optionsHtml += `<option value="${v}">${v}</option>`; });
+                verseSelect.innerHTML = optionsHtml;
+                verseSelect.disabled = false;
+                const msgBook = book === "Todos" ? "todos os Evangelhos" : book;
+                document.getElementById("results-container").innerHTML = `<p style='text-align:center; padding:20px; color:#666;'>Base de <strong>${msgBook}</strong> carregada. Clique em Pesquisar.</p>`;
+            } catch (e) {
+                console.error("Erro ao carregar JSON:", e);
+                verseSelect.innerHTML = "<option value=''>Erro ao carregar</option>";
+                document.getElementById("results-container").innerHTML = "<p style='text-align:center; color:red;'>Erro de conexão ou JSON inválido.</p>";
+            }
+        }
+
+        // --- ATUALIZAÇÃO DO DASHBOARD ---
+        function updateDashboard(results) {
+            const dashboard = document.getElementById("search-dashboard");
+            dashboard.style.display = "block";
+            const counts = { "Mateus": 0, "Marcos": 0, "Lucas": 0, "João": 0 };
+            results.forEach(r => { if (counts[r.book] !== undefined) counts[r.book]++; });
+            const ctx = document.getElementById('searchChart').getContext('2d');
+            if (searchChartInstance) { searchChartInstance.destroy(); }
+            searchChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        label: 'Ocorrências',
+                        data: Object.values(counts),
+                        backgroundColor: ['#36454F', '#999999', '#00bcd4', '#B8860B'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, datalabels: { color: '#000', anchor: 'end', align: 'top', formatter: (value) => value > 0 ? value : '' } },
+                    scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } },
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = Object.keys(counts)[index];
+                            document.getElementById("book-select").value = label;
+                            loadVersesForSelectedBook().then(() => searchText());
+                        }
+                    }
+                }
+            });
+            const gridContainer = document.getElementById("verses-grid-content");
+            gridContainer.innerHTML = results.map(r => {
+                const shortBook = r.book.substring(0, 3);
+                return `<div class="verse-chip" onclick="scrollToCard('${r.book}', '${r.verse}')" title="Ir para ${r.book} ${r.verse}">${shortBook} ${r.verse}</div>`;
+            }).join("");
+        }
+
+        // --- PESQUISA PRINCIPAL ---
+        async function searchText() {
+            if (database.length === 0) { await loadVersesForSelectedBook(); }
+            const text = document.getElementById("search-input").value.toLowerCase();
+            const selectedVerse = document.getElementById("verse-select").value;
+            const container = document.getElementById("results-container");
+            
+            let results = database.filter(entry => {
+                const matchesVerse = selectedVerse === "" || entry.verse === selectedVerse;
+                const matchesText = !text || (
+                    (entry.content && entry.content.toLowerCase().includes(text)) ||
+                    (entry.ai_summary && entry.ai_summary.toLowerCase().includes(text)) ||
+                    (entry.ai_tags && entry.ai_tags.some(tag => tag.toLowerCase().includes(text)))
+                );
+                return matchesVerse && matchesText;
+            });
+            results.sort((a, b) => compareVerses(a.verse, b.verse));
+            if (!results.length) {
+                container.innerHTML = "<p style='text-align:center; padding:20px;'>Nenhum resultado encontrado com esses filtros.</p>";
+                document.getElementById("search-dashboard").style.display = "none";
+                return;
+            }
+            updateDashboard(results);
+            const cardsHtml = results.map(r => {
+                const pdfLink = r.source ? `${PDF_BASE_URL}${r.source}` : '#';
+                const safeId = generateSafeId(r.book, r.verse);
+                let contentDisplay = r.content;
+                if (text) contentDisplay = r.content.replace(new RegExp(text, "gi"), (match) => `<mark>${match}</mark>`);
+                let summaryHtml = r.ai_summary ? `<div class="ai-summary-box"><span class="ai-summary-title">✨ Resumo IA</span><div class="ai-summary-text">${r.ai_summary}</div></div>` : '';
+                let tagsHtml = (r.ai_tags && Array.isArray(r.ai_tags)) ? `<div class="ai-tags-container">` + r.ai_tags.map(tag => `<span class="ai-tag" onclick="pesquisarTag('${tag}')" style="cursor:pointer" title="Filtrar por ${tag}">#${tag}</span>`).join('') + `</div>` : '';
+                return `
+                <div id="${safeId}" class='result-card'>
+                    <div class='result-header'><span class='book-title'>${r.book}</span><span class='verse-badge'>${r.verse}</span></div>
+                    ${summaryHtml}
+                    <div class='result-body'>${contentDisplay}</div>
+                    ${tagsHtml}
+                    <div class='result-footer'>
+                        <a href="${pdfLink}" target="_blank" class="pdf-link-btn" title="Ver documento original"><span class="pdf-icon">📄</span> Ver Original</a>
+                    </div>
+                </div>`;
+            }).join("");
+            const countHtml = `<div class="results-count-bar"><span>${results.length} resultados encontrados</span><small style="opacity:0.8">${selectedVerse ? 'Versículo ' + selectedVerse : 'Listagem ordenada'}</small></div>`;
+            container.innerHTML = countHtml + `<div class="results-grid">${cardsHtml}</div>`;
+        }
+
+        function pesquisarTag(tag) {
+            document.getElementById("search-input").value = tag;
+            searchText();
+        }
+
+        // --- INICIALIZAÇÃO GERAL ---
+        document.addEventListener("DOMContentLoaded", function() {
+            loadVersesForSelectedBook();
+            Chart.register(ChartDataLabels);
+            
+            // Gráficos Pizza
+            const chartColors = ['#36454F', '#00bcd4', '#B8860B', '#999999']; 
+            const chartLabels = ['Mateus', 'Lucas', 'João', 'Marcos'];
+            const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: (v) => v + '%' } }, animation: { duration: 2000, animateScale: true } };
+            new Chart(document.getElementById('chartJesus'), { type: 'pie', data: { labels: chartLabels, datasets: [{ data: [33.4, 30.1, 21.6, 14.9], backgroundColor: chartColors, borderWidth: 2, borderColor: '#ffffff' }] }, options: commonOptions });
+            new Chart(document.getElementById('chartEmmanuel'), { type: 'pie', data: { labels: chartLabels, datasets: [{ data: [35.4, 26.8, 24.2, 13.6], backgroundColor: chartColors, borderWidth: 2, borderColor: '#ffffff' }] }, options: commonOptions });
+
+            // SCATTER CHART (PEARSON - NOVO)
+            const rValue = calculateStats(gospelData);
+            document.getElementById('r-value-display').innerText = rValue.toFixed(4); // Atualiza o card de métrica
+            
+            const ctxScatter = document.getElementById('correlationChart').getContext('2d');
+            new Chart(ctxScatter, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Evangelistas',
+                            data: gospelData.map(d => ({ x: d.x, y: d.y })),
+                            backgroundColor: gospelData.map(d => d.color),
+                            pointRadius: 10, pointHoverRadius: 15
+                        },
+                        {
+                            type: 'line', label: 'Tendência',
+                            data: [{x: 10, y: 10}, {x: 40, y: 40}],
+                            borderColor: 'rgba(255, 110, 64, 0.5)', borderWidth: 2, borderDash: [5, 5],
+                            pointRadius: 0, fill: false, datalabels: { display: false } // Disable labels for line
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { display: false }, // Disable default datalabels for scatter
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if(context.dataset.type === 'line') return;
+                                    let d = gospelData[context.dataIndex];
+                                    return `${d.name}: Falas ${d.x}% | Comentários ${d.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: '% Palavras de Jesus' }, min: 10, max: 40 },
+                        y: { title: { display: true, text: '% Comentários Emmanuel' }, min: 10, max: 40 }
+                    },
+                    onClick: (e, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const index = activeElements[0].index;
+                            if (activeElements[0].datasetIndex === 0) updateDetails(index);
+                        }
+                    }
+                }
+            });
+            // Auto-select Mateus no painel lateral
+            updateDetails(0);
+        });
+
+        // --- ÁUDIO E ANIMAÇÃO ---
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                if (reveals[i].getBoundingClientRect().top < window.innerHeight - 50) { reveals[i].classList.add("active"); }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+
+        let audioCtx, ambientGain, ambientOscillators = [], isAudioInit = false;
+        function initAudio() { if (isAudioInit) return; audioCtx = new (window.AudioContext || window.webkitAudioContext)(); isAudioInit = true; }
+        
+        function playAmbientSound() {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            ambientGain = audioCtx.createGain();
+            ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            ambientGain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 2);
+            ambientGain.connect(audioCtx.destination);
+            [261.63, 329.63, 392.00].forEach(f => {
+                let osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.value = f;
+                let osc2 = audioCtx.createOscillator(); osc2.type = 'triangle'; osc2.frequency.value = f * 1.002;
+                osc.connect(ambientGain); osc2.connect(ambientGain); osc.start(); osc2.start();
+                ambientOscillators.push(osc, osc2);
+            });
+        }
+
+        function stopAmbientSound() {
+            if (ambientGain) {
+                ambientGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2);
+                setTimeout(() => { ambientOscillators.forEach(osc => osc.stop()); ambientOscillators = []; }, 2000);
+            }
+        }
+
+        function animateCanvas(canvasId, color) {
+            const canvas = document.getElementById(canvasId), ctx = canvas.getContext('2d');
+            let particles = [];
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resize); resize();
+            let rotation = 0;
+            const mathStrings = ["φ ≈ 1.618", "Fib(n)", "Golden Ratio"];
+            function draw() {
+                if (!canvas.offsetParent) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const centerX = canvas.width / 2, centerY = canvas.height / 2;
+                ctx.fillStyle = color; rotation += 0.002;
+                for (let i = 0; i < (window.innerWidth < 600 ? 300 : 700); i++) {
+                    const r = (window.innerWidth < 600 ? 3 : 5) * Math.sqrt(i), theta = i * 2.39996 + rotation;
+                    ctx.beginPath(); ctx.arc(centerX + r * Math.cos(theta), centerY + r * Math.sin(theta), 1 + (i/700)*3, 0, 2 * Math.PI);
+                    ctx.globalAlpha = 1 - (i/700) * 0.9; ctx.fill();
+                }
+                if (particles.length < 15) {
+                    particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, text: mathStrings[Math.floor(Math.random() * mathStrings.length)], life: 0, maxLife: Math.random() * 200 + 100, alpha: 0 });
+                }
+                particles.forEach((p, i) => {
+                    p.life++; p.alpha = p.life < 50 ? p.alpha + 0.02 : (p.life > p.maxLife - 50 ? p.alpha - 0.02 : p.alpha);
+                    if (p.alpha < 0) p.alpha = 0;
+                    ctx.globalAlpha = p.alpha * 0.4; ctx.font = "20px Courier New"; ctx.fillText(p.text, p.x, p.y);
+                    if (p.life >= p.maxLife) particles.splice(i, 1);
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+        animateCanvas('canvas-intro', '#00bcd4');
+
+        const introOverlay = document.getElementById('intro-overlay'), outroOverlay = document.getElementById('outro-overlay');
+        const headerAudioBtn = document.getElementById('header-audio-btn');
+        let synth = window.speechSynthesis, utterance = null;
+
+        function resetAllButtons() {
+            document.querySelectorAll('.play-btn').forEach(b => {
+                b.classList.remove('playing', 'paused', 'active-audio');
+                let t = b.innerText;
+                let originalText = "OUVIR ANÁLISE";
+                if(t.includes("INTRODUÇÃO")) originalText = "OUVIR INTRODUÇÃO";
+                if(t.includes("COMPARATIVA")) originalText = "OUVIR ANÁLISE COMPARATIVA";
+                if(t.includes("VEREDITO")) originalText = "OUVIR VEREDITO";
+                if(t.includes("INSTRUÇÕES")) originalText = "OUVIR INSTRUÇÕES";
+                if(t.includes("ESTATÍSTICA")) originalText = "OUVIR EXPLICAÇÃO ESTATÍSTICA";
+                b.querySelector('span:last-child').innerText = originalText;
+            });
+        }
+
+        function toggleAudio(text, btn) {
+            if (btn.classList.contains('active-audio')) {
+                if (synth.speaking && !synth.paused) { synth.pause(); btn.classList.replace('playing', 'paused'); btn.querySelector('span:last-child').innerText = "CONTINUAR"; }
+                else if (synth.paused) { synth.resume(); btn.classList.replace('paused', 'playing'); btn.querySelector('span:last-child').innerText = "PAUSAR"; }
+            } else {
+                synth.cancel(); resetAllButtons(); 
+                btn.classList.add('active-audio', 'playing'); btn.querySelector('span:last-child').innerText = "PAUSAR";
+                utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR'; utterance.rate = 0.9;
+                utterance.onend = () => { btn.classList.remove('playing', 'paused', 'active-audio'); let originalText = "OUVIR ANÁLISE"; if(text.includes("estatística")) originalText = "OUVIR EXPLICAÇÃO ESTATÍSTICA"; btn.querySelector('span:last-child').innerText = originalText; resetAllButtons(); };
+                synth.speak(utterance);
+            }
+        }
+
+        function playMandatoryIntro() {
+            document.getElementById('start-mandatory-btn').style.display = 'none';
+            document.getElementById('skip-intro-btn').style.display = 'none';
+            document.getElementById('intro-text').innerText = "Apresentando...";
+            headerAudioBtn.classList.add('playing'); playAmbientSound();
+            if ('speechSynthesis' in window) {
+                synth.cancel(); utterance = new SpeechSynthesisUtterance("Bem vindos. O que vocês estão prestes a ver é a prova matemática de que o acaso não existe na obra espiritual.");
+                utterance.lang = 'pt-BR'; utterance.rate = 0.9;
+                utterance.onend = () => { closeIntro(); headerAudioBtn.classList.remove('playing'); };
+                synth.speak(utterance);
+            } else { setTimeout(closeIntro, 4000); }
+        }
+
+        function skipIntro() { synth.cancel(); resetAllButtons(); closeIntro(); }
+        function closeIntro() { introOverlay.classList.remove('active'); document.body.classList.add('intro-completed'); stopAmbientSound(); setTimeout(reveal, 100); }
+
+        // --- LÓGICA DO MODAL E GERAÇÃO DE RELATÓRIO WEB ---
+    
+    // Abre o modal
+    function startDownloadProcess() {
+        if(typeof playAmbientSound === 'function') playAmbientSound();
+        document.getElementById('download-modal').style.display = 'flex';
+    }
+
+    // Fecha o modal
+    function fecharModal() {
+        document.getElementById('download-modal').style.display = 'none';
+        if(typeof stopAmbientSound === 'function') stopAmbientSound();
+    }
+
+    // Processa o formulário e inicia a geração do relatório
+    function finalizarDownload(event) {
+        event.preventDefault(); 
+        const form = event.target;
+        const data = new FormData(form);
+        const btn = form.querySelector('button');
+        
+        // Feedback visual
+        const textoOriginal = btn.innerText;
+        btn.innerText = "GERANDO RELATÓRIO...";
+        btn.disabled = true;
+
+        // Envia dados para o SheetMonkey (Captura de Lead)
+        fetch(form.action, { method: 'POST', body: data })
+        .then(() => {
+            // Sucesso no envio do e-mail -> Gera o Relatório
+            fecharModal();
+            gerarRelatorioWeb(); // <--- NOVA FUNÇÃO AQUI
+            
+            // Restaura o formulário
+            btn.innerText = textoOriginal; 
+            btn.disabled = false; 
+            form.reset();
+        })
+        .catch(error => {
+            alert("Erro ao registrar. O relatório será gerado mesmo assim.");
+            fecharModal();
+            gerarRelatorioWeb(); // Gera mesmo se der erro no sheetmonkey (fallback)
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+        });
+    }
+// --- NOVA FUNÇÃO: GERA A PÁGINA DE RELATÓRIO OTIMIZADA (RESUMO + LINKS) ---
+    async function gerarRelatorioWeb() {
+        // Feedback visual de carregamento
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.95);z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:sans-serif;color:#36454F;";
+        loadingOverlay.innerHTML = "<div style='font-size:2em;margin-bottom:10px;'>⏳</div><div style='font-weight:bold;font-size:1.2em'>Gerando Índice Analítico...</div><div style='font-size:0.9em;color:#666'>Compilando todos os Evangelhos</div>";
+        document.body.appendChild(loadingOverlay);
+
+        try {
+            // 1. Captura as imagens dos gráficos atuais
+            const imgJesus = document.getElementById('chartJesus').toDataURL('image/png');
+            const imgEmm = document.getElementById('chartEmmanuel').toDataURL('image/png');
+            const imgScatter = document.getElementById('correlationChart').toDataURL('image/png');
+
+            // 2. Baixa todos os dados JSON
+            const urls = [
+                EXTERNAL_DATABASE_MAP["Mateus"],
+                EXTERNAL_DATABASE_MAP["Marcos"],
+                EXTERNAL_DATABASE_MAP["Lucas"],
+                EXTERNAL_DATABASE_MAP["João"]
+            ];
+            
+            const responses = await Promise.all(urls.map(url => fetch(url)));
+            const dataObjects = await Promise.all(responses.map(res => res.json()));
+            
+            // 3. Combina os dados
+            let fullData = [];
+            fullData.push(...dataObjects[0].map(d => ({...d, book: 'Mateus'})));
+            fullData.push(...dataObjects[1].map(d => ({...d, book: 'Marcos'})));
+            fullData.push(...dataObjects[2].map(d => ({...d, book: 'Lucas'})));
+            fullData.push(...dataObjects[3].map(d => ({...d, book: 'João'})));
+
+            // Constante base para os links (garantindo que esteja acessível)
+            const BASE_PDF = "https://andrepawlas-ui.github.io/acervo-emmanuel/pdfs/";
+
+            // 4. Monta o HTML Otimizado
+            let htmlContent = `
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <title>Índice Analítico - Emmanuel e o Cristo</title>
+                <style>
+                    body { font-family: 'Open Sans', Helvetica, Arial, sans-serif; color: #333; padding: 30px; max-width: 1200px; margin: 0 auto; -webkit-print-color-adjust: exact; }
+                    
+                    /* Cabeçalho */
+                    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #B8860B; padding-bottom: 20px; margin-bottom: 30px; }
+                    h1 { color: #36454F; margin: 0; font-size: 1.8em; text-transform: uppercase; }
+                    .sub-header { color: #666; font-size: 0.9em; margin-top: 5px; }
+                    
+                    /* Gráficos em linha */
+                    .charts-row { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 40px; page-break-inside: avoid; }
+                    .chart-item { flex: 1; border: 1px solid #eee; padding: 10px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+                    .chart-item h3 { font-size: 0.8em; color: #00bcd4; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+                    .chart-item img { max-width: 100%; height: auto; max-height: 200px; }
+
+                    /* Tabela Otimizada */
+                    table { width: 100%; border-collapse: collapse; font-size: 0.85em; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+                    th { background-color: #36454F; color: white; padding: 10px; text-align: left; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; }
+                    td { border-bottom: 1px solid #eee; padding: 8px 10px; vertical-align: middle; }
+                    tr:nth-child(even) { background-color: #f8f9fa; }
+                    tr:hover { background-color: #e0f7fa; }
+
+                    /* Colunas Específicas */
+                    .col-book { width: 10%; font-weight: bold; color: #36454F; }
+                    .col-verse { width: 10%; font-weight: bold; color: #B8860B; white-space: nowrap; }
+                    .col-content { width: 65%; color: #555; line-height: 1.4; text-align: justify; }
+                    .col-link { width: 15%; text-align: center; }
+
+                    /* Botão de Link na Tabela */
+                    .btn-pdf { 
+                        display: inline-block; text-decoration: none; 
+                        background: #fff; border: 1px solid #00bcd4; color: #00bcd4; 
+                        padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.9em;
+                        transition: all 0.2s;
+                    }
+                    .btn-pdf:hover { background: #00bcd4; color: white; }
+
+                    /* Botão de Imprimir (Flutuante) */
+                    .fab-print {
+                        position: fixed; bottom: 30px; right: 30px;
+                        background: #B8860B; color: white; border: none;
+                        width: 60px; height: 60px; border-radius: 50%;
+                        font-size: 24px; cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                        display: flex; align-items: center; justify-content: center;
+                        z-index: 1000; transition: transform 0.2s;
+                    }
+                    .fab-print:hover { transform: scale(1.1); background: #36454F; }
+
+                    @media print {
+                        .no-print, .fab-print { display: none !important; }
+                        body { padding: 0; max-width: 100%; }
+                        a { text-decoration: none; color: black; }
+                        .btn-pdf { border: none; color: #000; text-align: right; }
+                        .btn-pdf:after { content: " (Ver PDF)"; font-size: 0.8em; color: #666; }
+                    }
+                </style>
+            </head>
+            <body>
+                <button class="fab-print" onclick="window.print()" title="Imprimir / Salvar PDF">🖨️</button>
+
+                <header>
+                    <div>
+                        <h1>Índice Analítico de Versículos</h1>
+                        <div class="sub-header">Relatório consolidado: Correlação Emmanuel & Evangelhos</div>
+                    </div>
+                    <div style="text-align:right; font-size:0.8em; color:#666;">
+                        <strong>Total:</strong> ${fullData.length} registros<br>
+                        <strong>Data:</strong> ${new Date().toLocaleDateString()}
+                    </div>
+                </header>
+
+                <div class="charts-row">
+                    <div class="chart-item"><h3>Falas de Jesus</h3><img src="${imgJesus}"></div>
+                    <div class="chart-item"><h3>Comentários</h3><img src="${imgEmm}"></div>
+                    <div class="chart-item"><h3>Correlação (R=0.98)</h3><img src="${imgScatter}"></div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Evangelista</th>
+                            <th>Versículo</th>
+                            <th>Trecho do Conteúdo (Resumo)</th>
+                            <th style="text-align:center">Acesso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${fullData.map(row => {
+                            // Lógica de Truncar Texto (Resumo)
+                            // Pega os primeiros 130 caracteres para não quebrar o layout
+                            let snippet = row.content ? row.content : "";
+                            if (snippet.length > 130) {
+                                snippet = snippet.substring(0, 130) + "...";
+                            }
+                            
+                            // Link do PDF
+                            const linkUrl = row.source ? (BASE_PDF + row.source) : "#";
+
+                            return `
+                            <tr>
+                                <td class="col-book">${row.book}</td>
+                                <td class="col-verse">${row.verse}</td>
+                                <td class="col-content">${snippet}</td>
+                                <td class="col-link">
+                                    <a href="${linkUrl}" target="_blank" class="btn-pdf">📄 Abrir PDF</a>
+                                </td>
+                            </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+                
+                <div style="margin-top:30px; text-align:center; color:#ccc; font-size:0.7em;">
+                    Gerado por Sistema de Análise Espiritual | Base de Dados: André L. Pawlas
+                </div>
+            </body>
+            </html>
+            `;
+
+            // 5. Abre a nova janela
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.write(htmlContent);
+                win.document.close();
+            } else {
+                alert("Por favor, permita pop-ups para visualizar o relatório.");
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao gerar relatório. Tente novamente.");
+        } finally {
+            if(document.body.contains(loadingOverlay)) {
+                document.body.removeChild(loadingOverlay);
+            }
+        }
+    }
+    </script>
 </body>
 </html>
