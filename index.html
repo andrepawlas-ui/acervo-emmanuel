@@ -38,7 +38,7 @@
             margin: 0; padding: 0;
             background-color: #f7f7f7; color: var(--text-dark);
             line-height: 1.6;
-            overflow: hidden; 
+            overflow-x: hidden; /* Evita rolagem horizontal indesejada */
             scroll-behavior: smooth;
             -webkit-font-smoothing: antialiased;
         }
@@ -198,7 +198,15 @@
             padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         .dashboard-layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
-        .dashboard-col-chart { flex: 1; min-width: 300px; height: 250px; position: relative; }
+        
+        /* CORREÇÃO DO CONTAINER DO GRÁFICO (Chart.js Wrapper) */
+        .dashboard-col-chart { flex: 1; min-width: 0; /* Impede o flex item de estourar */ position: relative; }
+        .chart-container-fix {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
         .dashboard-col-grid { flex: 1; min-width: 300px; }
         .dashboard-title {
             font-family: 'Montserrat', sans-serif; font-size: 1em; color: var(--color-primary);
@@ -386,12 +394,15 @@
             .math-explanation-box { flex-direction: column; text-align: center; }
             .math-highlight { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 20px; margin-bottom: 20px; }
             
-            /* CORREÇÃO DO LOOP INFINITO DO GRÁFICO */
+            /* CORREÇÃO DO LOOP INFINITO NO CELULAR */
             .dashboard-col-chart {
+                flex: none !important;
                 width: 100% !important;
                 min-width: 0 !important;
-                height: 300px !important; /* Altura fixa essencial */
-                flex: none !important;
+            }
+            .chart-container-fix {
+                height: 300px !important;
+                width: 100% !important;
             }
         }
 
@@ -647,7 +658,9 @@
                     <div class="dashboard-layout">
                         <div class="dashboard-col-chart">
                             <span class="dashboard-title">Distribuição por Livro (Clique para filtrar)</span>
-                            <canvas id="searchChart"></canvas>
+                            <div class="chart-container-fix">
+                                <canvas id="searchChart"></canvas>
+                            </div>
                         </div>
                         <div class="dashboard-col-grid">
                             <span class="dashboard-title">Índice dos Versículos (Clique para ver)</span>
@@ -845,6 +858,8 @@
             results.forEach(r => { if (counts[r.book] !== undefined) counts[r.book]++; });
             const ctx = document.getElementById('searchChart').getContext('2d');
             if (searchChartInstance) { searchChartInstance.destroy(); }
+            
+            // CONFIGURAÇÃO DO GRÁFICO DE BARRAS RESPONSIVO
             searchChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -857,7 +872,8 @@
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false, // IMPORTANTE PARA O CONTAINER FIXO
                     plugins: { legend: { display: false }, datalabels: { color: '#000', anchor: 'end', align: 'top', formatter: (value) => value > 0 ? value : '' } },
                     scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } },
                     onClick: (evt, elements) => {
@@ -870,6 +886,7 @@
                     }
                 }
             });
+            
             const gridContainer = document.getElementById("verses-grid-content");
             gridContainer.innerHTML = results.map(r => {
                 const shortBook = r.book.substring(0, 3);
